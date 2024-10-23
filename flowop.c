@@ -1255,12 +1255,12 @@ flowop_destruct_generic(flowop_t *flowop)
 
 	/* release any local resources held by the flowop */
 	(void) ipc_mutex_lock(&flowop->fo_lock);
-	buf = flowop->fo_buf;
-	flowop->fo_buf = NULL;
+	// buf = flowop->fo_buf;
+	// flowop->fo_buf = NULL;
 	(void) ipc_mutex_unlock(&flowop->fo_lock);
 
-	if (buf)
-		free(buf);
+	// if (buf)
+	// 	free(buf);
 }
 
 

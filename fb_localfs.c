@@ -199,7 +199,7 @@ fb_lfs_pread(fb_fdesc_t *fd, caddr_t iobuf, fbint_t iosize, off64_t fileoffset)
 static int
 fb_lfs_read(fb_fdesc_t *fd, caddr_t iobuf, fbint_t iosize)
 {
-    printf("read()\n");
+    // printf("read()\n");
 	return (read(fd->fd_num, iobuf, iosize));
 }
 
@@ -488,8 +488,8 @@ fb_lfsflow_aiowait(threadflow_t *threadflow, flowop_t *flowop)
 static int
 fb_lfs_open(fb_fdesc_t *fd, char *path, int flags, int perms)
 {
-    if (perms == 438)
-        printf("open()\n");
+    // if (perms == 438)
+        // printf("open()\n");
 	if ((fd->fd_num = open64(path, flags, perms)) < 0)
 		return (FILEBENCH_ERROR);
 	else

@@ -37,7 +37,7 @@
 #include <fcntl.h>
 #include <math.h>
 #include <dirent.h>
-
+#include "common.h"
 #ifndef HAVE_SYSV_SEM
 #include <semaphore.h>
 #endif /* HAVE_SYSV_SEM */
@@ -184,6 +184,7 @@ static flowop_proto_t flowoplib_funcs[] = {
  * master flowop list. All created flowops are set to
  * instance "0".
  */
+int buf_offset=2048;
 void
 flowoplib_flowinit()
 {
@@ -402,8 +403,9 @@ flowoplib_filesetup(threadflow_t *threadflow, flowop_t *flowop,
 				return (FILEBENCH_ERROR);
 			}
 		}
+		
 	}
-
+	
 	if (threadflow->tf_fd[fd].fd_ptr == NULL) {
 		int ret;
 
@@ -430,7 +432,6 @@ flowoplib_filesetup(threadflow_t *threadflow, flowop_t *flowop,
 		else
 			*wssp = avd_get_int(flowop->fo_fileset->fs_size);
 	}
-
 	return (FILEBENCH_OK);
 }
 
@@ -444,7 +445,8 @@ flowoplib_iobufsetup(threadflow_t *threadflow, flowop_t *flowop,
 {
 	long memsize;
 	size_t memoffset;
-
+	int i;
+	unsigned long total_offset=0;
 	if (iosize == 0) {
 		filebench_log(LOG_ERROR, "zero iosize for thread %s",
 		    flowop->fo_name);
@@ -455,9 +457,8 @@ flowoplib_iobufsetup(threadflow_t *threadflow, flowop_t *flowop,
 	if (flowoplib_fileattrs(flowop) & FLOW_ATTR_DIRECTIO)
 		iosize = iosize + 512;
 
-	if ((memsize = threadflow->tf_constmemsize) != 0) {
+	if ((memsize = threadflow->tf_constmemsize) != 0 ) {
 		/* use tf_mem for I/O with random offset */
-
 		if (memsize < iosize) {
 			filebench_log(LOG_ERROR,
 			    "tf_memsize smaller than IO size for thread %s",
@@ -465,10 +466,11 @@ flowoplib_iobufsetup(threadflow_t *threadflow, flowop_t *flowop,
 			return (FILEBENCH_ERROR);
 		}
 
-		fb_urandom(&memoffset, memsize, iosize, NULL);
-		*iobufp = threadflow->tf_mem + memoffset;
-
+		// fb_urandom(&memoffset, memsize, iosize, NULL); //norandom
+		// *iobufp = threadflow->tf_mem + memoffset;
+		*iobufp = threadflow->tf_mem+(4096-(unsigned long)(threadflow->tf_mem)%4096)+buf_offset;
 	} else {
+		
 		/* use private I/O buffer */
 		if ((flowop->fo_buf != NULL) &&
 		    (flowop->fo_buf_size < iosize)) {
@@ -476,22 +478,22 @@ flowoplib_iobufsetup(threadflow_t *threadflow, flowop_t *flowop,
 			free(flowop->fo_buf);
 			flowop->fo_buf = NULL;
 		}
-
+		if ((flowop->fo_buf == NULL) && ((flowop->fo_buf
+		= (char *)malloc(iosize)) == NULL))
+		return (FILEBENCH_ERROR);
 		/*
 		 * Allocate memory for the  buffer. The memory is freed
 		 * by flowop_destruct_generic() or by this routine if more
 		 * memory is needed for the buffer.
 		 */
-		if ((flowop->fo_buf == NULL) && ((flowop->fo_buf
-		    = (char *)malloc(iosize)) == NULL))
-			return (FILEBENCH_ERROR);
+		
 
 		flowop->fo_buf_size = iosize;
 		*iobufp = flowop->fo_buf;
 	}
 
-	if (flowoplib_fileattrs(flowop) & FLOW_ATTR_DIRECTIO)
-		*iobufp = (caddr_t)((((unsigned long)(*iobufp)) / 512) * 512);
+	// if (flowoplib_fileattrs(flowop) & FLOW_ATTR_DIRECTIO)
+	// 	*iobufp = (caddr_t)((((unsigned long)(*iobufp)) / 512) * 512);
 
 	return (FILEBENCH_OK);
 }
@@ -1696,12 +1698,10 @@ flowoplib_createfile(threadflow_t *threadflow, flowop_t *flowop)
 	}
 
 	threadflow->tf_fse[fd] = file;
-
 	flowop_beginop(threadflow, flowop);
 	err = fileset_openfile(&threadflow->tf_fd[fd], flowop->fo_fileset,
 		file, openflag, 0666, flowoplib_fileattrs(flowop));
 	flowop_endop(threadflow, flowop, 0);
-
 	if (err == FILEBENCH_ERROR) {
 		filebench_log(LOG_ERROR, "failed to create file %s",
 		    flowop->fo_name);
@@ -2438,7 +2438,6 @@ flowoplib_writewholefile(threadflow_t *threadflow, flowop_t *flowop)
 		bytes += ret;
 	}
 	flowop_endop(threadflow, flowop, bytes);
-
 	return (FILEBENCH_OK);
 }
 
@@ -2535,7 +2534,6 @@ flowoplib_appendfilerand(threadflow_t *threadflow, flowop_t *flowop)
 	if ((ret = flowoplib_iosetup(threadflow, flowop, &wss, &iobuf,
 	    &fdesc, appendsize)) != FILEBENCH_OK)
 		return (ret);
-
 	/* XXX wss is not being used */
 
 	/* Measure time to write bytes */

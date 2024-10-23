@@ -3482,13 +3482,13 @@ parser_run(cmd_t *cmd)
 	parser_fileset_create(cmd);
 
 
-	printf("M5 checkpoint...\n");
-	m5_checkpoint(0, 0);
+	//printf("M5 checkpoint...\n");
+	//m5_checkpoint(0, 0);
 
 	parser_proc_create(cmd);
 	
-	printf("M5 checkpoint...\n");
-	m5_checkpoint(0, 0);
+	//printf("M5 checkpoint...\n");
+	//m5_checkpoint(0, 0);
 	
 	/* check for startup errors */
 	if (filebench_shm->shm_f_abort)

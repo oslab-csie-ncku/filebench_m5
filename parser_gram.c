@@ -64,7 +64,7 @@
 /* Copy the first part of user declarations.  */
 #line 29 "parser_gram.y" /* yacc.c:339  */
 
-
+# include "common.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -112,7 +112,7 @@ char *execname;
 
 static int dofile = DOFILE_FALSE;
 static FILE *parentscript;
-
+char* buff;
 static char *fbbasepath = FILEBENCHDIR;
 static char cwd[MAXPATHLEN];
 static pidlist_t *pidlist;
@@ -5401,7 +5401,7 @@ parser_proc_define(cmd_t *cmd)
 	avd_t var_instances;
 	fbint_t instances;
 	cmd_t *inner_cmd;
-
+	
 	/* Get the name of the process */
 	if ((attr = get_attr(cmd, FSA_NAME))) {
 		name = avd_get_str(attr->attr_avd);
@@ -5487,7 +5487,7 @@ parser_thread_define(cmd_t *cmd, procflow_t *procflow, int procinstances)
 		    procflow->pf_name);
 		filebench_shutdown(1);
 	}
-
+	
 	/* Get the number of instances from attribute */
 	if ((attr = get_attr_integer(cmd, FSA_INSTANCES))) {
 		if (AVD_IS_RANDOM(attr->attr_avd)) {
