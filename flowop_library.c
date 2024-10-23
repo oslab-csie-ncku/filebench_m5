@@ -37,7 +37,6 @@
 #include <fcntl.h>
 #include <math.h>
 #include <dirent.h>
-#include "common.h"
 #ifndef HAVE_SYSV_SEM
 #include <semaphore.h>
 #endif /* HAVE_SYSV_SEM */
@@ -445,8 +444,6 @@ flowoplib_iobufsetup(threadflow_t *threadflow, flowop_t *flowop,
 {
 	long memsize;
 	size_t memoffset;
-	int i;
-	unsigned long total_offset=0;
 	if (iosize == 0) {
 		filebench_log(LOG_ERROR, "zero iosize for thread %s",
 		    flowop->fo_name);

@@ -64,7 +64,6 @@
 /* Copy the first part of user declarations.  */
 #line 29 "parser_gram.y" /* yacc.c:339  */
 
-# include "common.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -112,7 +111,6 @@ char *execname;
 
 static int dofile = DOFILE_FALSE;
 static FILE *parentscript;
-char* buff;
 static char *fbbasepath = FILEBENCHDIR;
 static char cwd[MAXPATHLEN];
 static pidlist_t *pidlist;
