@@ -428,9 +428,7 @@ threadflow_define(procflow_t *procflow, char *name,
 	if ((threadflow = threadflow_define_common(procflow, name,
 	    inherit, FLOW_MASTER)) == NULL)
 		return (NULL);
-
 	threadflow->tf_instances = instances;
-
 	(void) ipc_mutex_unlock(&filebench_shm->shm_threadflow_lock);
 
 	return (threadflow);

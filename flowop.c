@@ -41,6 +41,7 @@ static flowop_t *flowop_define_common(threadflow_t *threadflow, char *name,
 static int flowop_composite(threadflow_t *threadflow, flowop_t *flowop);
 static int flowop_composite_init(flowop_t *flowop);
 static void flowop_composite_destruct(flowop_t *flowop);
+int total_inst;
 
 /*
  * A collection of flowop support functions. The actual code that
@@ -458,7 +459,7 @@ flowop_start(threadflow_t *threadflow)
 	flowop_t *flowop;
 	size_t memsize;
 	int ret = FILEBENCH_OK;
-
+	total_inst=*(threadflow->tf_instances->avd_val.intptr);
 	set_thread_ioprio(threadflow);
 
 #ifdef HAVE_PROC_PID_LWP
@@ -664,14 +665,24 @@ flowop_start(threadflow_t *threadflow)
 			flowop = threadflow->tf_thrd_fops;
 			threadflow->tf_stats.fs_count++;
 		}
+		// 印出每個thread的進度
+		// printf("thread %s , total count:%d instancd %d \n ", threadflow->tf_name, threadflow->tf_stats.fs_count,threadflow->tf_instance );
 	}
-
+	//maybe need mutex (但應該不會撞)
+	if(total_inst==1){
+		m5_dump_stats(0, 0);
+		m5_exit(0);
+		printf("thread %s end, total count:%d\n", threadflow->tf_name, threadflow->tf_stats.fs_count);
+		// while(1);
+	}else{
+		total_inst=total_inst-1;
+		while(1);
+	}
 #ifdef HAVE_LWPS
 	filebench_log(LOG_DEBUG_SCRIPT, "Thread %d exiting",
 	    _lwp_self());
 #endif
-	m5_dump_stats(0, 0);
-	printf("thread %s end, total count:%d\n", threadflow->tf_name, threadflow->tf_stats.fs_count);
+	// m5_dump_stats(0, 0);
 	/* Tell flowops to destroy locally acquired state */
 	flowop_destruct_all_flows(threadflow);
 
